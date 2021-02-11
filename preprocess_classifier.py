@@ -107,4 +107,4 @@ if __name__ == '__main__':
 
     model.evaluate(x_test, y_test)
 
-    save_model(model, 'models/classifier')
+    save_model(model, 'models/chair_classifier')

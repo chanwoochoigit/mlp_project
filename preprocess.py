@@ -43,6 +43,34 @@ def get_data(word_idx):
     else:
         return np.array(corresponding_data)
 
+def rearrange_single(pixel_data):
+    red_layer = pixel_data[:1024]
+    green_layer = pixel_data[1024:2048]
+    blue_layer = pixel_data[2048:]
+    rgb_array = []
+
+    for rgb_layer in zip(red_layer, green_layer, blue_layer):
+        rgb_array.append(np.array(rgb_layer))
+
+    rgb_array = np.array(rgb_array).reshape((32, 32, 3))
+    return rgb_array
+
+def rearrange_chunk(pixel_data):
+    new_data = []
+    for i in range(len(pixel_data)):
+        red_layer = pixel_data[i][:1024]
+        green_layer = pixel_data[i][1024:2048]
+        blue_layer = pixel_data[i][2048:]
+
+        rgb_array = []
+
+        for rgb_layer in zip(red_layer,green_layer,blue_layer):
+            rgb_array.append(np.array(rgb_layer))
+
+        rgb_array = np.array(rgb_array).reshape((32,32,3))
+        new_data.append(rgb_array)
+    return np.array(new_data)
+
 def generate_and_save_images(pixel_data, label):
 
     for i in range(len(pixel_data)):
@@ -55,57 +83,67 @@ def generate_and_save_images(pixel_data, label):
         for rgb_layer in zip(red_layer,green_layer,blue_layer):
             rgb_array.append(np.array(rgb_layer))
 
-        rgb_array = np.array(rgb_array).reshape(32,32,3)
+        rgb_array = np.array(rgb_array).reshape((32,32,3))
 
         image = Image.fromarray(rgb_array)
         image.save('images/{}_{}.png'.format(label,i))
     print("{} images saved!".format(label))
+
+def simply_plot_and_save(pxl_array, label):
+    for i in range(len(pxl_array)):
+        image = Image.fromarray(pxl_array[i])
+        image.save('images/{}_{}.png'.format(label, i))
 
 def get_idx_and_find_data(word):
     word_idx = get_index(word)
     data = get_data(word_idx)
     return data
 
-def concat_helper(data_1, data_2, data_3):
-    new_data = []
-
-    print("_______________________________________")
-    for i in range(len(data_1)):
-        print("mixing data...{}/{}".format(i, len(data_1)))
-        for j in range(len(data_2)):
-            for k in range(len(data_3)):
-                red = data_1[i][:1024] + data_2[j][:1024] + data_3[k][:1024]
-                green = data_1[i][1024:2048] + data_2[j][1024:2048] + data_3[k][1024:2048]
-                blue = data_1[i][2048:] + data_2[j][2048:] + data_3[k][2048:]
-                new_data.append(np.array([red, green, blue]))
-    print("_______________________________________")
-    return np.array(new_data)
-
-def concat_pixel_data(data_1, data_2, data_3):
-    batch_1 = concat_helper(data_1[:5], data_2, data_3)
-    # batch_2 = concat_helper(data_1[100:200], data_2, data_3)
-    # batch_3 = concat_helper(data_1[200:300], data_2, data_3)
-    # batch_4 = concat_helper(data_1[300:400], data_2, data_3)
-    # batch_5 = concat_helper(data_1[400:], data_2, data_3)
-
-    # return batch_1 + batch_2 + batch_3 + batch_4 + batch_5
-    print("concatenation successful!")
-    return batch_1
+# def concat_helper(data_1, data_2, data_3):
+#     new_data = []
+#
+#     print("_______________________________________")
+#     for i in range(len(data_1)):
+#         print("mixing data...{}/{}".format(i, len(data_1)))
+#         for j in range(len(data_2)):
+#             for k in range(len(data_3)):
+#                 red = data_1[i][:1024] + data_2[j][:1024] + data_3[k][:1024]
+#                 green = data_1[i][1024:2048] + data_2[j][1024:2048] + data_3[k][1024:2048]
+#                 blue = data_1[i][2048:] + data_2[j][2048:] + data_3[k][2048:]
+#                 new_data.append(np.array([red, green, blue]))
+#     print("_______________________________________")
+#     return np.array(new_data)
+#
+# def concat_pixel_data(data_1, data_2, data_3):
+#     batch_1 = concat_helper(data_1[:5], data_2, data_3)
+#     # batch_2 = concat_helper(data_1[100:200], data_2, data_3)
+#     # batch_3 = concat_helper(data_1[200:300], data_2, data_3)
+#     # batch_4 = concat_helper(data_1[300:400], data_2, data_3)
+#     # batch_5 = concat_helper(data_1[400:], data_2, data_3)
+#
+#     # return batch_1 + batch_2 + batch_3 + batch_4 + batch_5
+#     print("concatenation successful!")
+#     return batch_1
 if __name__ == '__main__':
 
-    # chair_data = get_idx_and_find_data(b'chair')
-    # bee_data = get_idx_and_find_data(b'bee')
-    # cloud_data = get_idx_and_find_data(b'cloud')
-    # # mushroom_data = get_idx_and_find_data(b'mushroom')
-    #
-    # # generate_and_save_images(chair_data, 'chair')
-    # # generate_and_save_images(bee_data, 'bee')
-    # # generate_and_save_images(cloud_data, 'cloud')
-    # # generate_and_save_images(mushroom_data, 'mushroom')
-    #
-    # bee_cloud = concat_pixel_data(chair_data, bee_data, cloud_data)
-    # np.save('mixed_data/bee_cloud.npy',bee_cloud)
-    bee_cloud = np.load('mixed_data/bee_cloud.npy')
-    print(bee_cloud.shape)
+    chair_data = get_idx_and_find_data(b'chair')
+    chair_data = rearrange_chunk(chair_data)
 
-    generate_and_save_images(bee_cloud, 'bee_cloud')
+    bee_data = get_idx_and_find_data(b'bee')
+    bee_data = rearrange_chunk(bee_data)
+
+    cloud_data = get_idx_and_find_data(b'cloud')
+    cloud_data = rearrange_chunk(cloud_data)
+
+    # mushroom_data = get_idx_and_find_data(b'mushroom')
+    # mushroom_data = rearrange_chunk(mushroom_data)
+
+    # generate_and_save_images(chair_data, 'chair')
+    # generate_and_save_images(bee_data, 'bee')
+    # generate_and_save_images(cloud_data, 'cloud')
+    # generate_and_save_images(mushroom_data, 'mushroom')
+
+    # chair_bee_cloud = np.vstack((chair_data, bee_data, cloud_data))
+    # np.save('mixed_data/chair_bee_cloud.npy',chair_bee_cloud)
+    chair_bee_cloud = np.load('mixed_data/chair_bee_cloud.npy')
+    simply_plot_and_save(chair_bee_cloud, 'cbc')
