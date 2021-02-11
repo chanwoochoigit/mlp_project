@@ -43,6 +43,34 @@ def get_data(word_idx):
     else:
         return np.array(corresponding_data)
 
+def rearrange_single(pixel_data):
+    red_layer = pixel_data[:1024]
+    green_layer = pixel_data[1024:2048]
+    blue_layer = pixel_data[2048:]
+    rgb_array = []
+
+    for rgb_layer in zip(red_layer, green_layer, blue_layer):
+        rgb_array.append(np.array(rgb_layer))
+
+    rgb_array = np.array(rgb_array).reshape((32, 32, 3))
+    return rgb_array
+
+def rearrange_chunk(pixel_data):
+    new_data = []
+    for i in range(len(pixel_data)):
+        red_layer = pixel_data[i][:1024]
+        green_layer = pixel_data[i][1024:2048]
+        blue_layer = pixel_data[i][2048:]
+
+        rgb_array = []
+
+        for rgb_layer in zip(red_layer,green_layer,blue_layer):
+            rgb_array.append(np.array(rgb_layer))
+
+        rgb_array = np.array(rgb_array).reshape((32,32,3))
+        new_data.append(rgb_array)
+    return np.array(new_data)
+
 def generate_and_save_images(pixel_data, label):
 
     for i in range(len(pixel_data)):
@@ -60,6 +88,11 @@ def generate_and_save_images(pixel_data, label):
         image = Image.fromarray(rgb_array)
         image.save('images/{}_{}.png'.format(label,i))
     print("{} images saved!".format(label))
+
+def simply_plot_and_save(pxl_array, label):
+    for i in range(len(pxl_array)):
+        image = Image.fromarray(pxl_array[i])
+        image.save('images/{}_{}.png'.format(label, i))
 
 def get_idx_and_find_data(word):
     word_idx = get_index(word)
@@ -94,16 +127,23 @@ def get_idx_and_find_data(word):
 if __name__ == '__main__':
 
     chair_data = get_idx_and_find_data(b'chair')
+    chair_data = rearrange_chunk(chair_data)
+
     bee_data = get_idx_and_find_data(b'bee')
+    bee_data = rearrange_chunk(bee_data)
+
     cloud_data = get_idx_and_find_data(b'cloud')
+    cloud_data = rearrange_chunk(cloud_data)
+
     # mushroom_data = get_idx_and_find_data(b'mushroom')
+    # mushroom_data = rearrange_chunk(mushroom_data)
 
     # generate_and_save_images(chair_data, 'chair')
     # generate_and_save_images(bee_data, 'bee')
     # generate_and_save_images(cloud_data, 'cloud')
     # generate_and_save_images(mushroom_data, 'mushroom')
 
-    bee_cloud = np.vstack((chair_data, bee_data, cloud_data))
-    np.save('mixed_data/bee_cloud.npy',bee_cloud)
-    # bee_cloud = np.load('mixed_data/bee_cloud.npy')
-    print(bee_cloud.shape)
+    # chair_bee_cloud = np.vstack((chair_data, bee_data, cloud_data))
+    # np.save('mixed_data/chair_bee_cloud.npy',chair_bee_cloud)
+    chair_bee_cloud = np.load('mixed_data/chair_bee_cloud.npy')
+    simply_plot_and_save(chair_bee_cloud, 'cbc')
