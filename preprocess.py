@@ -77,12 +77,12 @@ def concat_helper(data_1, data_2, data_3):
                 red = data_1[i][:1024] + data_2[j][:1024] + data_3[k][:1024]
                 green = data_1[i][1024:2048] + data_2[j][1024:2048] + data_3[k][1024:2048]
                 blue = data_1[i][2048:] + data_2[j][2048:] + data_3[k][2048:]
-                new_data.append(red + green + blue)
+                new_data.append(np.array([red, green, blue]))
     print("_______________________________________")
-    return new_data
+    return np.array(new_data)
 
 def concat_pixel_data(data_1, data_2, data_3):
-    batch_1 = concat_helper(data_1[:10], data_2, data_3)
+    batch_1 = concat_helper(data_1[:5], data_2, data_3)
     # batch_2 = concat_helper(data_1[100:200], data_2, data_3)
     # batch_3 = concat_helper(data_1[200:300], data_2, data_3)
     # batch_4 = concat_helper(data_1[300:400], data_2, data_3)
@@ -106,3 +106,6 @@ if __name__ == '__main__':
     # bee_cloud = concat_pixel_data(chair_data, bee_data, cloud_data)
     # np.save('mixed_data/bee_cloud.npy',bee_cloud)
     bee_cloud = np.load('mixed_data/bee_cloud.npy')
+    print(bee_cloud.shape)
+
+    generate_and_save_images(bee_cloud, 'bee_cloud')
